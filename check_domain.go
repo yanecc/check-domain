@@ -83,6 +83,9 @@ func main() {
 	var err error
 	if path == "" {
 		data, err = os.ReadFile(fileName)
+		if err != nil {
+			checkBalance()
+		}
 	} else {
 		data, err = os.ReadFile(path)
 	}
@@ -140,31 +143,6 @@ func main() {
 	fmt.Println("\nFinished writing available domains to ok.txt")
 	checkBalance()
 }
-
-// func createConfigFile() {
-// 	config := Config{
-// 		ApiKey:       "apiKey",
-// 		AccurateMode: true,
-// 		UseWhois:     false,
-// 	}
-
-// 	configFile, err := os.Create(configFile)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 		os.Exit(1)
-// 	}
-// 	defer configFile.Close()
-
-// 	encoder := toml.NewEncoder(configFile)
-// 	if err := encoder.Encode(config); err != nil {
-// 		fmt.Println(err)
-// 		os.Exit(1)
-// 	}
-
-//		fmt.Println("Please register and get api key from https://user.whoisxmlapi.com/products, then edit config.toml.")
-//	}
-// 	fmt.Println("Please register and get api key from https://user.whoisxmlapi.com/products, then edit config.toml.")
-// }
 
 func createConfigFile() {
 	configFile, err := os.Create(configFile)
@@ -237,9 +215,15 @@ func checkBalance() {
 		}
 	}(resp.Body)
 
+	if resp.StatusCode != http.StatusOK {
+		fmt.Println("API 请求失败")
+		return
+	}
+
 	var balance Balance
 	err = json.NewDecoder(resp.Body).Decode(&balance)
 	if err != nil {
+		fmt.Println(err)
 		return
 	}
 
@@ -247,8 +231,12 @@ func checkBalance() {
 	for _, v := range balance.Data {
 		if v.Product.Name == "WHOIS API" {
 			whois = v.Credits
-		} else if v.Product.Name == "Domain Availability API" {
+		}
+		if v.Product.Name == "Domain Availability API" {
 			da = v.Credits
+		}
+		if da != 0 && whois != 0 {
+			break
 		}
 	}
 	fmt.Printf("您的 Whois 查询次数余额：%d\n", whois)
