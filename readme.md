@@ -35,7 +35,7 @@ check-domain 程序调用 WhoisXMLApi 的接口来检查域名是否可注册，
 check-domain
 ```
 
-直接运行check-domain，从同目录下 `domains.txt` 文件中逐行读取**完整域名**，检查域名是否可注册。
+直接运行 check-domain，从同目录下 `domains.txt` 文件中逐行读取**完整域名**，检查域名是否可注册。
 
 ### 指定读入文件
 
